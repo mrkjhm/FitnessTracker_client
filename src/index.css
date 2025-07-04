@@ -1,0 +1,136 @@
+
+* {
+  margin: 0;
+  padding: 0px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+/* ----- NAVBAR START -----*/
+
+.navbar-nav .nav-link {
+  color: white !important;
+}
+
+.navbar-nav .nav-link:hover {
+  font-weight: bold;
+}
+
+#gradient-button {
+  background: linear-gradient(90deg, #a01d2a, #f85262);
+  border: none;
+}
+
+/* ----- NAVBAR END ----- */
+
+
+
+/* ----- BENEFITS START ----- */
+
+#benefits-bg {
+  background-image: url(../src/assets/bg-img-2.jpg);
+  height: 90vh;
+  width: 100%;
+  background-position: center;
+}
+
+
+
+
+/* ----- BENEFITS END ----- */
+
+
+.banner {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.no-padding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+
+.video-bg {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  z-index: -1;
+}
+
+.content {
+  position: absolute;
+  width: 100%;
+  height: 100vh; /* Keep this to match video height */
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+
+.bg-overlay {
+  height: 100vh; /* Make the overlay span the full height of its parent */
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute; /* Ensure it overlays the video */
+  top: 0; /* Align it with the top */
+}
+
+.nav-menu {
+  color: white;
+}
+
+#register {
+  cursor: pointer;
+}
+
+#login {
+  cursor: pointer;
+}
+#title {
+  font-size: 6rem;
+}
+
+#gradient-button-home:hover {
+  transition: .2s;
+ }
+
+ 
+#gradient-button-home:hover {
+ transform: scale(1.04);
+}
+
+/* Benefits Component */
+
+
+
+.text {
+  font-size: 0.8rem;
+}
+
+
+
+
+
+/* For mobile view */
+@media only screen and (max-width: 600px) {
+  #title {
+    font-size: 4rem;
+  }
+}
