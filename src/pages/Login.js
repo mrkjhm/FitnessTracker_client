@@ -1,12 +1,13 @@
 import { useContext, useState, useEffect } from 'react';
 import { Form, Button, FloatingLabel } from 'react-bootstrap';
-import { Navigate, useNavigate } from 'react-router-dom'; 
+import { Navigate, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import UserContext from '../UserContext';
 
 export default function Login() {
 
     const API_URL = process.env.REACT_APP_API_URL;
+    console.log("API", API_URL);
 
     const handleRegisterClick = () => {
         navigate('/register')
@@ -127,7 +128,7 @@ export default function Login() {
             <h1 className="mb-4">Login</h1>
             <Form.Group controlId="userEmail" className='pb-2'>
                 <FloatingLabel controlId="floatingInput" label="Email address">
-                    <Form.Control 
+                    <Form.Control
                     type="email"
                     placeholder="Enter address"
                     value={email}
@@ -139,14 +140,14 @@ export default function Login() {
 
             <Form.Group controlId="password" className='pb-2'>
                 <FloatingLabel controlId="floatingPassword" label="Password">
-                    <Form.Control 
+                    <Form.Control
                         type="password"
-                        placeholder="Password" 
+                        placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-            
-                        />   
+
+                        />
                 </FloatingLabel>
             </Form.Group>
 
@@ -156,10 +157,10 @@ export default function Login() {
                 </Button>
 
                 <p className='mt-4'>Don't have an account? <span id="register" onClick={handleRegisterClick}><strong>Register</strong></span></p>
-            
+
         </Form>
-    
+
     </div>
-        
+
     )
 }
