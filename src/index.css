@@ -12,6 +12,11 @@
 }
 /* ----- NAVBAR START -----*/
 
+
+
+body::-webkit-scrollbar {
+  display: none;
+}
 .navbar-nav .nav-link {
   color: white !important;
 }
@@ -124,6 +129,9 @@
   font-size: 0.8rem;
 }
 
+body.modal-open {
+  overflow: hidden !important;
+}
 
 
 

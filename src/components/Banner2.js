@@ -1,8 +1,7 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import UserContext from '../UserContext';  // Assuming you have UserContext set up
 
-import videoBg from '../assets/videoBg.mp4';
+import UserContext from '../UserContext';  // Assuming you have UserContext set up
 import img1 from '../assets/img1.jpg';
 
 export default function Banner2({ scrollToSection }) {

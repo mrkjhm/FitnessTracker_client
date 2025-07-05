@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Button, Modal, FloatingLabel } from 'react-bootstrap';
 
 export default function AddWorkout({ show, handleClose, onAdd }) {
@@ -18,8 +18,23 @@ export default function AddWorkout({ show, handleClose, onAdd }) {
         setSecond(0);
     };
 
+    useEffect(() => {
+        if (show) {
+            document.body.style.overflow = 'hidden'; // disable scroll
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [show]);
+
+
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={handleClose} backdrop="static" // prevents closing by clicking outside
+               keyboard={false}  // disables ESC to close
+               centered>
             <Form onSubmit={handleSubmit}>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Workout</Modal.Title>

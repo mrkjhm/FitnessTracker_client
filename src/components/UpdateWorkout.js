@@ -73,7 +73,7 @@ export default function UpdateWorkout({ workoutName, workoutDuration, workout, o
                         </Form.Group>
 
                         <Form.Group>
-                            <Form.Label>Minutes:</Form.Label>
+                            <Form.Label>Seconds:</Form.Label>
                             <Form.Control
                                 type="number"
                                 min="0"
