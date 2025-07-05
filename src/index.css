@@ -129,9 +129,6 @@ body::-webkit-scrollbar {
   font-size: 0.8rem;
 }
 
-body.modal-open {
-  overflow: hidden !important;
-}
 
 
 

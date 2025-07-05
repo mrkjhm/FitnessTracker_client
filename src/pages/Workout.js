@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useState, useRef } from "react"
-import { Row, Col, Button, Card, Container, Spinner } from "react-bootstrap"
+import { Row, Col, Button, Card, Container } from "react-bootstrap"
 import { buildStyles, CircularProgressbarWithChildren } from 'react-circular-progressbar';
 import { useNavigate } from "react-router-dom";
 import 'react-circular-progressbar/dist/styles.css';
@@ -36,46 +36,36 @@ export default function Workout() {
     const [addWorkoutModal, setAddWorkoutModal] = useState(false);
     const [activeWorkoutId, setActiveWorkoutId] = useState(null);
     const [workoutTimers, setWorkoutTimers] = useState({});
+
     const [isPaused, setIsPaused] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [resetDisabled, setResetDisabled] = useState(false);
 
     const timerRef = useRef(null);
 
     const closeAddWorkoutModal = () => setAddWorkoutModal(false);
     const showAddWorkoutModal = () => setAddWorkoutModal(true);
 
-    const clearTimer = () => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
-    };
-
-    const formatTime = useCallback((totalSeconds) => {
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds].map(val => val.toString().padStart(2, '0')).join(':');
-    }, []);
-
-    const groupWorkoutsByDate = useCallback((workouts) => {
+    const groupWorkoutsByDate = (workouts) => {
         return workouts.reduce((acc, workout) => {
             const dateObj = new Date(workout.dateAdded);
+
+            // Get full day name (e.g., Monday)
             const day = dateObj.toLocaleDateString(undefined, { weekday: 'long' });
+
+            // Format date (e.g., July 4, 2025)
             const formattedDate = dateObj.toLocaleDateString();
+
+            // Combine day + date (e.g., Friday - 7/4/2025)
             const displayDate = `${day} | ${formattedDate}`;
+
             if (!acc[displayDate]) acc[displayDate] = [];
             acc[displayDate].push(workout);
+
             return acc;
         }, {});
-    }, []);
-
+    };
 
     const addWorkout = (name, hour, minute, second) => {
-        if (!name.trim() || (hour === 0 && minute === 0 && second === 0)) {
-            Swal.fire("Please enter a valid workout name and duration.");
-            return;
-        }
         fetch(`${API_URL}/workouts/addWorkout`, {
             method: 'POST',
             headers: {
@@ -368,26 +358,43 @@ export default function Workout() {
 
     useEffect(() => {
         if (activeWorkoutId && !isPaused) {
-            clearTimer();
+            if (timerRef.current) clearInterval(timerRef.current);
+
             timerRef.current = setInterval(() => {
                 setWorkoutTimers(prev => {
                     const newTime = (prev[activeWorkoutId] || 0) - 1;
+
                     if (newTime <= 0) {
-                        clearTimer();
+                        clearInterval(timerRef.current);
+                        timerRef.current = null;
+
+                        const updatedTimers = { ...prev, [activeWorkoutId]: 0 };
                         setIsPaused(false);
-                        return { ...prev, [activeWorkoutId]: 0 };
+
+                        return updatedTimers;
                     }
-                    localStorage.setItem('workoutTimers', JSON.stringify({ ...prev, [activeWorkoutId]: newTime }));
+
+                    // ✅ ⬇️ ADD THIS INSIDE setWorkoutTimers BEFORE RETURN
+                    localStorage.setItem('workoutTimers', JSON.stringify({
+                        ...prev,
+                        [activeWorkoutId]: newTime
+                    }));
+
                     return { ...prev, [activeWorkoutId]: newTime };
                 });
             }, 1000);
         }
-        return () => clearTimer();
+
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        };
     }, [activeWorkoutId, isPaused]);
 
 
     const fetchWorkout = useCallback(() => {
-        setLoading(true);
         fetch(`${API_URL}/workouts/getMyWorkouts`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -396,18 +403,23 @@ export default function Workout() {
             .then(res => res.json())
             .then(data => {
                 if (typeof data.message !== "string") {
-                    const sorted = data.workouts.sort((a, b) => {
+                    const sortedWorkouts = data.workouts.sort((a, b) => {
                         if (a.status === 'pending' && b.status === 'completed') return -1;
                         if (a.status === 'completed' && b.status === 'pending') return 1;
                         return 0;
                     });
-                    setWorkouts(sorted);
+                    setWorkouts(sortedWorkouts);
 
+                    // ⏱ Initialize timers if not set yet
                     setWorkoutTimers(prev => {
                         const newTimers = { ...prev };
-                        sorted.forEach(w => {
-                            if (!newTimers[w._id] && w.status !== 'completed') {
-                                newTimers[w._id] = (w.duration.hours * 3600) + (w.duration.minutes * 60) + (w.duration.seconds || 0);
+
+                        sortedWorkouts.forEach(workout => {
+                            const id = workout._id;
+                            if (!newTimers[id] && workout.status !== 'completed') {
+                                const totalSeconds = (workout.duration.hours * 3600) + (workout.duration.minutes * 60) + (workout.duration.seconds || 0);
+
+                                newTimers[id] = totalSeconds;
                             }
                         });
                         return newTimers;
@@ -415,8 +427,7 @@ export default function Workout() {
                 } else {
                     setWorkouts([]);
                 }
-            })
-            .finally(() => setLoading(false));
+            });
     }, [API_URL]);
 
     useEffect(() => {
@@ -425,6 +436,7 @@ export default function Workout() {
             return;
         }
 
+        // ✅ ⬇️ RESTORE STATE FROM LOCALSTORAGE
         const savedId = localStorage.getItem('activeWorkoutId');
         const savedPaused = localStorage.getItem('isPaused');
         const savedTimers = localStorage.getItem('workoutTimers');
@@ -447,7 +459,6 @@ export default function Workout() {
                         <h1>Your Personalized Workout Plans</h1>
                     </Col>
                 </Row>
-
                 <Row className="mb-5 d-flex justify-content-center">
                     <Col xs="auto">
                         <Button variant="danger" onClick={showAddWorkoutModal}>
@@ -455,129 +466,127 @@ export default function Workout() {
                         </Button>
                     </Col>
                 </Row>
-
                 <Container>
-                    {loading ? (
-                        <Spinner animation="border" variant="secondary" className="d-block mx-auto my-5" />
-                    ) : workouts.length === 0 ? (
-                        <div className="text-center my-5">
-                            <h5>No workouts yet.</h5>
-                            <Button variant="outline-danger" onClick={showAddWorkoutModal}>
-                                Add Your First Workout
-                            </Button>
-                        </div>
-                    ) : (
-                        Object.entries(groupWorkoutsByDate(workouts)).map(([date, dailyWorkouts]) => (
-                            <div key={date} className="mb-4">
-                                <h5 style={{ fontSize: '0.80rem' }} className="fw-bold text-muted mb-3">{date}</h5>
-                                <Row>
-                                    {dailyWorkouts.map(workout => {
-                                        const dateAdded = new Date(workout.dateAdded).toLocaleString();
-                                        const dateCompleted = workout.dateCompleted ? new Date(workout.dateCompleted).toLocaleString() : null;
+                    {Object.entries(groupWorkoutsByDate(workouts)).map(([date, dailyWorkouts]) => (
+                        <div key={date} className="mb-4">
+                            <h5 style={{ fontSize: '0.80rem' }} className="fw-bold text-muted mb-3" >{date}</h5>
+                            <Row>
+                                {dailyWorkouts.map(workout => {
+                                    const formatTime = (totalSeconds) => {
+                                        const hours = Math.floor(totalSeconds / 3600);
+                                        const minutes = Math.floor((totalSeconds % 3600) / 60);
+                                        const seconds = totalSeconds % 60;
+                                        return [
+                                            hours.toString().padStart(2, '0'),
+                                            minutes.toString().padStart(2, '0'),
+                                            seconds.toString().padStart(2, '0')
+                                        ].join(':');
+                                    };
+                                    const dateAdded = new Date(workout.dateAdded).toLocaleString();
+                                    const dateCompleted = workout.dateCompleted ? new Date(workout.dateCompleted).toLocaleString() : null;
+                                    return (
+                                        <Col lg={4} md={6} xs={12} key={workout._id} className="mb-3">
+                                            <Card>
+                                                <Card.Header className="d-flex justify-content-between align-items-center">
+                                                    <Card.Title className="mb-0">
+                                                        {workout.name}
 
-                                        return (
-                                            <Col lg={4} md={6} xs={12} key={workout._id} className="mb-3">
-                                                <Card>
-                                                    <Card.Header className="d-flex justify-content-between align-items-center">
-                                                        <Card.Title className="mb-0">{workout.name}</Card.Title>
-                                                        <span className={`badge bg-${workout.status === 'completed'
-                                                            ? 'success'
+                                                    </Card.Title>
+                                                    <span className={`badge bg-${workout.status === 'completed'
+                                                        ? 'success'
+                                                        : activeWorkoutId === workout._id
+                                                            ? 'primary'
+                                                            : workout.status === 'inProgress'
+                                                                ? 'warning'
+                                                                : 'info'}`}>{
+                                                        workout.status === 'completed'
+                                                            ? 'Completed!'
                                                             : activeWorkoutId === workout._id
-                                                                ? 'primary'
+                                                                ? 'Active'
                                                                 : workout.status === 'inProgress'
-                                                                    ? 'warning'
-                                                                    : 'info'}`}> {
-                                                            workout.status === 'completed'
-                                                                ? 'Completed!'
-                                                                : activeWorkoutId === workout._id
-                                                                    ? 'Active'
-                                                                    : workout.status === 'inProgress'
-                                                                        ? 'Paused'
-                                                                        : 'Ready to Start'
-                                                        }</span>
-                                                    </Card.Header>
+                                                                    ? 'Paused'
+                                                                    : 'Ready to Start'
+                                                    }</span>
+                                                </Card.Header>
+                                                <Card.Body>
+                                                    {workout.status !== 'completed' && workoutTimers[workout._id] !== undefined && (
+                                                        <div style={{ width: '50%', height: '50%', margin: '0 auto', paddingBottom: '20px' }}>
+                                                            <CircularProgressbarWithChildren
+                                                                value={workoutTimers[workout._id]}
+                                                                maxValue={(workout.duration.hours * 3600 + workout.duration.minutes * 60 + (workout.duration.seconds || 0))}
 
-                                                    <Card.Body>
-                                                        {workout.status !== 'completed' && workoutTimers[workout._id] !== undefined && (
-                                                            <div style={{ width: '60%', margin: '0 auto', paddingBottom: '20px' }}>
-                                                                <CircularProgressbarWithChildren
-                                                                    value={workoutTimers[workout._id]}
-                                                                    maxValue={(workout.duration.hours * 3600 + workout.duration.minutes * 60 + (workout.duration.seconds || 0))}
-                                                                    styles={buildStyles({
-                                                                        pathColor: activeWorkoutId === workout._id
-                                                                            ? (workoutTimers[workout._id] <= 10 ? '#dc3545' : '#198754')
-                                                                            : '#adb5bd',
-                                                                        trailColor: '#dee2e6',
-                                                                    })}
-                                                                    strokeWidth={4}
-                                                                >
-                                                                    <div style={{ fontSize: '30px', textAlign: 'center' }}>
-                                                                        <div style={{ fontSize: '14px' }}>Time Left</div>
-                                                                        <strong>{formatTime(workoutTimers[workout._id])}</strong>
-                                                                        <StartWorkout
-                                                                            status={workout.status}
-                                                                            workout={workout}
-                                                                            activeWorkoutId={activeWorkoutId}
-                                                                            isPaused={isPaused}
-                                                                            timeLeft={workoutTimers[workout._id]}
-                                                                            onStart={startCountdown}
-                                                                            onPause={pauseCountdown}
-                                                                            onResume={resumeCountdown}
-                                                                            onComplete={completedWorkout}
-                                                                        />
-                                                                    </div>
-                                                                </CircularProgressbarWithChildren>
-                                                            </div>
-                                                        )}
+                                                                styles={buildStyles({
+                                                                    pathColor: activeWorkoutId === workout._id
+                                                                        ? (workoutTimers[workout._id] <= 10 ? '#dc3545' : '#198754')
+                                                                        : '#adb5bd',
+                                                                    trailColor: '#dee2e6',
+                                                                })}
+                                                                strokeWidth={4}
+                                                            >
+                                                                <div style={{ fontSize: '30px', textAlign: 'center' }}>
+                                                                    <div style={{ fontSize: '14px' }}>Time Left</div>
+                                                                    <strong>{formatTime(workoutTimers[workout._id])}</strong>
+                                                                    <StartWorkout
+                                                                        status={workout.status}
+                                                                        workout={workout}
+                                                                        activeWorkoutId={activeWorkoutId}
+                                                                        isPaused={isPaused}
+                                                                        timeLeft={workoutTimers[workout._id]}
+                                                                        onStart={startCountdown}
+                                                                        onPause={pauseCountdown}
+                                                                        onResume={resumeCountdown}
+                                                                        onComplete={completedWorkout}
+                                                                    />
+                                                                </div>
+                                                            </CircularProgressbarWithChildren>
+                                                        </div>
+                                                    )}
 
-                                                        <Card.Text className="text pt-2">Date Added: {dateAdded}</Card.Text>
-                                                        {workout.status === 'completed' && dateCompleted && (
-                                                            <Card.Text className="text">Date Completed: {dateCompleted}</Card.Text>
-                                                        )}
-                                                    </Card.Body>
-
-                                                    <Card.Footer className="d-flex flex-wrap justify-content-start gap-2">
-                                                        {workout.status !== 'completed' && activeWorkoutId !== workout._id && (
-                                                            <UpdateWorkout
-                                                                workoutName={workout.name}
-                                                                workoutDuration={workout.duration}
-                                                                workout={workout._id}
-                                                                onUpdate={updateWorkout}
-                                                            />
-                                                        )}
-                                                        {!(activeWorkoutId === workout._id && !isPaused) && (
-                                                            <DeleteWorkout
-                                                                workout={workout._id}
-                                                                onDelete={deleteWorkout}
-                                                                status={workout.status}
-                                                            />
-                                                        )}
-                                                        {workout.status !== 'completed' && (
-                                                            <CompletedWorkout
-                                                                status={workout.status}
-                                                                workout={workout._id}
-                                                                onDone={completedWorkout}
-                                                            />
-                                                        )}
-                                                        <ResetWorkout
-                                                            workout={workout}
-                                                            status={workout.status}
-                                                            onReset={resetCountdown}
+                                                    <Card.Text className="text pt-2">Date Added: {dateAdded}</Card.Text>
+                                                    {workout.status === 'completed' && dateCompleted && (
+                                                        <Card.Text className="text">Date Completed: {dateCompleted}</Card.Text>
+                                                    )}
+                                                </Card.Body>
+                                                <Card.Footer className="d-flex flex-wrap justify-content-start gap-2">
+                                                    {workout.status !== 'completed' && activeWorkoutId !== workout._id && (
+                                                        <UpdateWorkout
+                                                            workoutName={workout.name}
+                                                            workoutDuration={workout.duration}
+                                                            workout={workout._id}
+                                                            onUpdate={updateWorkout}
                                                         />
-                                                    </Card.Footer>
-                                                </Card>
-                                            </Col>
-                                        );
-                                    })}
-                                </Row>
-                            </div>
-                        ))
-                    )}
+                                                    )}
+                                                    {!(activeWorkoutId === workout._id && !isPaused) && (
+                                                        <DeleteWorkout
+                                                            workout={workout._id}
+                                                            onDelete={deleteWorkout}
+                                                            status={workout.status}
+                                                        />
+
+                                                    )}
+                                                    {workout.status !== 'completed' && (
+                                                        <CompletedWorkout
+                                                            status={workout.status}
+                                                            workout={workout._id}
+                                                            onDone={completedWorkout}
+                                                        />
+                                                    )}
+                                                    <ResetWorkout
+                                                        workout={workout}
+                                                        status={workout.status}
+                                                        onReset={resetCountdown}
+                                                    />
+                                                </Card.Footer>
+                                            </Card>
+                                        </Col>
+                                    );
+                                })}
+                            </Row>
+                        </div>
+                    ))}
                 </Container>
             </div>
-
             <AddWorkout show={addWorkoutModal} handleClose={closeAddWorkoutModal} onAdd={addWorkout} />
         </>
     );
-
 }
