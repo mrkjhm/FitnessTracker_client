@@ -8,7 +8,7 @@ export default function Login() {
 
     const API_URL = process.env.REACT_APP_API_URL;
 
-    const handleRegisterClicl = () => {
+    const handleRegisterClick = () => {
         navigate('/register')
     }
 
@@ -65,7 +65,7 @@ export default function Login() {
                 icon: "warning",
                 text: "Email and password do not match"
             });
-           
+
         }else{
             localStorage.setItem('token', data.access);
             retrieveUserDetails(data.access);
@@ -78,12 +78,12 @@ export default function Login() {
                 text: "Welcome to Fitness Club!"
             });
 
-            
+
 
         }
 
-		
-		
+
+
 	})
 
 	setEmail('');
@@ -155,7 +155,7 @@ export default function Login() {
                     Login
                 </Button>
 
-                <p className='mt-4'>Don't have an account? <span id="register" onClick={handleRegisterClicl}><strong>Register</strong></span></p>
+                <p className='mt-4'>Don't have an account? <span id="register" onClick={handleRegisterClick}><strong>Register</strong></span></p>
             
         </Form>
     
