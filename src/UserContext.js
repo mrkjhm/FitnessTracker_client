@@ -19,9 +19,11 @@ export const UserProvider = ({ children }) => {
         if (!token) return;
 
         fetch(`${API_URL}/users/details`, {
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
+            credentials: 'include'
         })
             .then((res) => res.json())
             .then((data) => {
@@ -34,6 +36,7 @@ export const UserProvider = ({ children }) => {
             })
             .catch((err) => console.error('User fetch error:', err));
     }, []);
+
 
     return (
         <UserContext.Provider value={{ user, setUser, unsetUser }}>

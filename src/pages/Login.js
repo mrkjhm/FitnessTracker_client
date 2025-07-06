@@ -13,30 +13,27 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-
     useEffect(() => {
         if (user?.id) {
             navigate('/workout');
         }
-    }, [navigate, user])
+    }, [navigate, user]);
 
     const handleRegisterClick = () => {
-        navigate('/register')
-    }
+        navigate('/register');
+    };
 
     function authentication(e) {
         e.preventDefault();
-        fetch(`${API_URL}/users/login`,{
-
+        fetch(`${API_URL}/users/login`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: 'include', // Include cookies for CORS
             body: JSON.stringify({
-
                 email: email,
                 password: password
-
             })
         })
             .then(res => res.json())
@@ -47,7 +44,7 @@ export default function Login() {
                         icon: "warning",
                         text: "Email and password do not match"
                     });
-                }else{
+                } else {
                     localStorage.setItem('token', data.access);
                     retrieveUserDetails(data.access);
 
@@ -60,6 +57,15 @@ export default function Login() {
                     });
                 }
             })
+            .catch(err => {
+                console.error("Login error:", err);
+                Swal.fire({
+                    title: "Login Error",
+                    icon: "error",
+                    text: "Failed to connect to the server."
+                });
+            });
+
         setEmail('');
         setPassword('');
     }
@@ -68,7 +74,8 @@ export default function Login() {
         fetch(`${API_URL}/users/details`, {
             headers: {
                 Authorization: `Bearer ${token}`
-            }
+            },
+            credentials: 'include' // Include cookies for CORS
         })
             .then(res => res.json())
             .then(data => {
@@ -78,7 +85,6 @@ export default function Login() {
                         isAdmin: data.user.isAdmin
                     });
                 } else {
-                    // Optional fallback to avoid state errors
                     setUser({ id: null, isAdmin: null });
                     console.warn("User data not found in token response");
                 }
@@ -113,7 +119,6 @@ export default function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-
                         />
                     </FloatingLabel>
                 </Form.Group>
@@ -124,5 +129,5 @@ export default function Login() {
                 <p className='mt-4'>Don't have an account? <span id="register" onClick={handleRegisterClick}><strong>Register</strong></span></p>
             </Form>
         </div>
-    )
+    );
 }
