@@ -1,13 +1,12 @@
-// UserContext.js
 import React, { createContext, useState, useEffect } from 'react';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-
     const API_URL = process.env.REACT_APP_API_URL;
 
     const [user, setUser] = useState({ id: null, isAdmin: null });
+    const [isLoadingUser, setIsLoadingUser] = useState(true); // 🆕 loading state
 
     const unsetUser = () => {
         localStorage.clear();
@@ -16,14 +15,17 @@ export const UserProvider = ({ children }) => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) {
+            setIsLoadingUser(false); // Done loading if no token
+            return;
+        }
 
         fetch(`${API_URL}/users/details`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            credentials: 'include'
+            credentials: 'include',
         })
             .then((res) => res.json())
             .then((data) => {
@@ -31,16 +33,22 @@ export const UserProvider = ({ children }) => {
                     setUser({
                         id: data.user._id,
                         isAdmin: data.user.isAdmin,
+                        name: data.user.name,
+                        email: data.user.email
                     });
                 }
             })
-            .catch((err) => console.error('User fetch error:', err));
+            .catch((err) => {
+                console.error('User fetch error:', err);
+            })
+            .finally(() => {
+                setIsLoadingUser(false); // ✅ done loading
+            });
     }, []);
 
-
     return (
-        <UserContext.Provider value={{ user, setUser, unsetUser }}>
-            {children}
+        <UserContext.Provider value={{ user, setUser, unsetUser, isLoadingUser }}>
+            {!isLoadingUser && children}
         </UserContext.Provider>
     );
 };

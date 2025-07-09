@@ -17,6 +17,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Logout from './pages/Logout';
 import Workout from './pages/Workout';
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 
@@ -61,7 +62,9 @@ function App() {
             <Route path='/register' element={<Register />} />
             <Route path='/login' element={<Login />} />
             <Route path='/logout' element={<Logout />} />
-            <Route path='/workout' element={<Workout />} />
+            <Route element={<ProtectedRoute />} >
+              <Route path='/workout' element={<Workout />} />
+            </Route>
           </Routes>
         </Router>
       </UserProvider>
