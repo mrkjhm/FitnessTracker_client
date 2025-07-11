@@ -106,7 +106,8 @@ export default function Workout() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify({ name, hour, minute, second })
+            body: JSON.stringify({ name, hours: hour, minutes: minute, seconds: second || 0 })
+
         })
             .then(res => res.json())
             .then(data => {
@@ -125,7 +126,8 @@ export default function Workout() {
                                 name,
                                 duration: {
                                     hours: parseInt(hour),
-                                    minutes: parseInt(minute)
+                                    minutes: parseInt(minute),
+                                    seconds: parseInt(second) || 0
                                 }
                             } : w
                         )

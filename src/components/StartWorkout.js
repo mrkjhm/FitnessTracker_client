@@ -3,17 +3,17 @@ import { Button } from 'react-bootstrap';
 import { FaPlay, FaPause, FaCheck, FaRedo } from 'react-icons/fa';
 
 export default function StartWorkout({
-                                         status,
-                                         workout,
-                                         activeWorkoutId,
-                                         isPaused,
-                                         onStart,
-                                         onPause,
-                                         onResume,
-                                         onComplete,
-                                         timeLeft,
-                                         resetWorkoutId
-                                     }) {
+                                        status,
+                                        workout,
+                                        activeWorkoutId,
+                                        isPaused,
+                                        onStart,
+                                        onPause,
+                                        onResume,
+                                        onComplete,
+                                        timeLeft,
+                                        resetWorkoutId
+                                    }) {
     const isActive = activeWorkoutId === workout._id;
     const [localStatus, setLocalStatus] = useState(status);
 
