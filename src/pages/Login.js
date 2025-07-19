@@ -14,6 +14,7 @@ export default function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const [showPassword, setShowPassword] = useState(false)
 
@@ -40,27 +41,30 @@ export default function Login() {
                 password: password
             })
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message === "Email and password do not match") {
-                    Swal.fire({
-                        title: "Login Fail",
-                        icon: "warning",
-                        text: "Email and password do not match"
-                    });
-                } else {
-                    localStorage.setItem('token', data.access);
-                    retrieveUserDetails(data.access);
+            .then(async res => {
+                const data = await res.json();
 
-                    navigate('/workout');
-
-                    Swal.fire({
-                        title: "Login Successful",
-                        icon: "success",
-                        text: "Welcome to Fitness Club!"
-                    });
+                if (!res.ok) {
+                    setError("Invalid email or password.");
+                    setTimeout(() => {
+                        setError('');
+                    }, 5000); // 3 seconds
+                    return;
                 }
+
+                // Success
+                localStorage.setItem('token', data.access);
+                retrieveUserDetails(data.access);
+
+                Swal.fire({
+                    title: "Login Successful",
+                    icon: "success",
+                    text: "Welcome to Fitness Club!"
+                });
+
+                navigate('/workout');
             })
+
             .catch(err => {
                 console.error("Login error:", err);
                 Swal.fire({
@@ -70,8 +74,8 @@ export default function Login() {
                 });
             });
 
-        setEmail('');
-        setPassword('');
+        // setEmail('');
+        // setPassword('');
     }
 
     const retrieveUserDetails = (token) => {
@@ -79,15 +83,24 @@ export default function Login() {
             headers: {
                 Authorization: `Bearer ${token}`
             },
-            credentials: 'include' // Include cookies for CORS
+            credentials: 'include'
         })
             .then(res => res.json())
             .then(data => {
                 if (data.user) {
-                    setUser({
+                    const userObject = {
                         id: data.user._id,
-                        isAdmin: data.user.isAdmin
-                    });
+                        isAdmin: data.user.isAdmin,
+                        userName: data.user.userName,
+                        email: data.user.email,
+                        mobileNo: data.user.mobileNo,
+                        info: data.user.info,
+                        token: token,
+                        avatar: data.user.avatar,
+                    };
+
+                    setUser(userObject); // ✅ sets full user to context
+                    localStorage.setItem('user', JSON.stringify(userObject)); // ✅ stores to localStorage
                 } else {
                     setUser({ id: null, isAdmin: null });
                     console.warn("User data not found in token response");
@@ -98,6 +111,7 @@ export default function Login() {
                 setUser({ id: null, isAdmin: null });
             });
     };
+
 
     return (
         <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
@@ -138,6 +152,8 @@ export default function Login() {
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </div>
                 </Form.Group>
+
+                {error && <div className="text-danger"><p>{error}</p></div>}
 
                 <Button variant="danger" type="submit" id="gradient-button" className=' col-12 p-2'>
                     Login

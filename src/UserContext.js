@@ -33,8 +33,11 @@ export const UserProvider = ({ children }) => {
                     setUser({
                         id: data.user._id,
                         isAdmin: data.user.isAdmin,
-                        name: data.user.name,
-                        email: data.user.email
+                        userName: data.user.userName,
+                        mobileNo: data.user.mobileNo,
+                        email: data.user.email,
+                        info: data.user.info,
+                        avatar: data.user.avatar,
                     });
                 }
             })

@@ -29,7 +29,7 @@ export default function AppNavbar() {
                         ?
                         <>
                             <Nav.Link as={Link} to="/workout">My Workout</Nav.Link>
-                            {/*<Nav.Link as={Link} to="/profile">Profile</Nav.Link>*/}
+                            <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
                             <Nav.Link as={Link} to="/logout">Logout</Nav.Link>
                         </>
                         :
