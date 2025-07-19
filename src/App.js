@@ -18,6 +18,7 @@ import Login from './pages/Login';
 import Logout from './pages/Logout';
 import Workout from './pages/Workout';
 import ProtectedRoute from "./components/ProtectedRoute";
+import Profile from "./pages/Profile";
 
 
 
@@ -65,6 +66,7 @@ function App() {
             <Route element={<ProtectedRoute />} >
               <Route path='/workout' element={<Workout />} />
             </Route>
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Router>
       </UserProvider>

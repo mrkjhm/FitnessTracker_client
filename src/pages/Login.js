@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { Form, Button, FloatingLabel } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import UserContext from '../UserContext';
 
@@ -13,6 +14,8 @@ export default function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const [showPassword, setShowPassword] = useState(false)
 
     useEffect(() => {
         if (user?.id) {
@@ -112,16 +115,28 @@ export default function Login() {
                     </FloatingLabel>
                 </Form.Group>
 
-                <Form.Group controlId="password" className='pb-2'>
+                <Form.Group className="pb-2" style={{ position: 'relative' }}>
                     <FloatingLabel controlId="floatingPassword" label="Password">
                         <Form.Control
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={e => setPassword(e.target.value)}
                             required
                         />
                     </FloatingLabel>
+                    <div
+                        onClick={() => setShowPassword(prev => !prev)}
+                        style={{
+                            position: 'absolute',
+                            right: 15,
+                            top: 10,
+                            cursor: 'pointer',
+                            zIndex: 10
+                        }}
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </div>
                 </Form.Group>
 
                 <Button variant="danger" type="submit" id="gradient-button" className=' col-12 p-2'>
