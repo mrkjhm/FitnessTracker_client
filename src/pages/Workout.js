@@ -455,9 +455,9 @@ export default function Workout() {
 
     return (
         <>
-            <div className="container">
+            <div className="mt-5 container">
                 <Row>
-                    <Col className="p-4 text-center">
+                    <Col className="mb-3 text-center">
                         <h1>Your Personalized Workout Plans</h1>
                     </Col>
                 </Row>

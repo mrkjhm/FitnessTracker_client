@@ -109,7 +109,7 @@ export default function Profile() {
             <div className="mt-5 container">
                 <Row>
 
-                    <h2 className="d-flex justify-content-center mb-5">Profile Information</h2>
+                    <h1 className="d-flex justify-content-center mb-5">Profile Information</h1>
                 </Row>
             </div>
 
