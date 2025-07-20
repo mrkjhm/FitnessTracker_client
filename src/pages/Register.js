@@ -116,9 +116,9 @@ export default function Register() {
 
     return (
         <>
-            <div className='container d-flex justify-content-center align-items-center' style={{ minHeight: '80vh' }}>
+            <div className='container d-flex justify-content-center align-items-center' style={{ minHeight: '90vh' }}>
                 <Form onSubmit={(e) => registerUser(e)} className='col-lg-5 col-10'>
-                    <h2 className=" mb-4">Register</h2>
+                    <h1 className=" mb-4">Register</h1>
 
                     <Form.Group className='pb-2'>
                         <FloatingLabel controlId="floatingInput" label="Username">
